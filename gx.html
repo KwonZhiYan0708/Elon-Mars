@@ -1,0 +1,485 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Opportunity: Abandoned but not Forgotten</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+:root{--gold:#FFC857;--orange:#FF7A45;--violet:#8B7BFF;--pink:#FF8FB8;--text:#F6F1FF}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:Fredoka,"Trebuchet MS",system-ui,sans-serif;font-size:18px;line-height:1.55;color:var(--text);background:radial-gradient(1100px 700px at 85% -10%,#3B2A8F 0,transparent 60%),linear-gradient(#0B1026,#1B1245 70%,#2A1450);overflow-x:hidden}
+#dust{position:fixed;inset:0;background:radial-gradient(900px 600px at 50% 0,rgba(193,90,40,.45),rgba(30,10,10,.55));opacity:0;pointer-events:none;transition:opacity 1.6s;z-index:1}
+body.storm #dust{opacity:1}
+#stars i{position:fixed;border-radius:50%;background:#fff;animation:tw 3s infinite alternate;z-index:0}
+@keyframes tw{from{opacity:.15}to{opacity:1}}
+#shoot{position:fixed;top:12vh;left:-10vw;width:120px;height:2px;background:linear-gradient(90deg,transparent,#fff);transform:rotate(18deg);animation:sh 9s 3s infinite;z-index:0}
+@keyframes sh{0%{left:-15vw;opacity:0}3%{opacity:1}12%{left:70vw;top:42vh;opacity:0}100%{left:70vw;opacity:0}}
+#ground{position:fixed;left:-10vw;right:-10vw;bottom:-15vh;height:27vh;border-radius:50% 50% 0 0;background:linear-gradient(#FF7A45,#B83A1A);z-index:0;transition:filter 1.6s}
+body.storm #ground{filter:brightness(.4) saturate(.7)}
+#hud{position:fixed;top:0;left:0;right:0;height:54px;display:flex;align-items:center;gap:12px;padding:6px 14px 0;z-index:6;background:linear-gradient(rgba(11,16,38,.92),transparent)}
+#hud b{font-size:13px;letter-spacing:3px;color:var(--gold)}
+#back{display:flex;align-items:center;gap:4px;font:600 15px Fredoka,sans-serif;color:#fff;background:rgba(255,255,255,.14);border:1.5px solid rgba(255,255,255,.55);border-radius:12px;padding:6px 12px 6px 8px;cursor:pointer}
+#back:hover{background:rgba(255,255,255,.28)}
+#trk{position:relative;flex:1;height:8px;background:rgba(255,255,255,.16);border-radius:9px}
+#fill{height:100%;width:0;border-radius:9px;background:linear-gradient(90deg,#FFD66B,#FF7A45);transition:width .7s}
+#hr{position:absolute;top:-17px;width:38px;margin-left:-19px;left:0;transition:left .7s}
+#fx{position:fixed;inset:0;pointer-events:none;z-index:9}
+#flash{position:fixed;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:8}
+#flash.go{animation:fl .9s ease-out}@keyframes fl{0%{opacity:0}15%{opacity:.95}100%{opacity:0}}
+main{position:relative;z-index:2;max-width:800px;margin:0 auto;padding:74px 18px 30vh}
+.screen{display:none}.screen.on{display:block}
+.screen.on>*{animation:up .6s both}
+.screen.on>*:nth-child(2){animation-delay:.07s}.screen.on>*:nth-child(3){animation-delay:.14s}.screen.on>*:nth-child(4){animation-delay:.21s}.screen.on>*:nth-child(5){animation-delay:.28s}.screen.on>*:nth-child(n+6){animation-delay:.35s}
+@keyframes up{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.center{text-align:center}
+.eyebrow{font-weight:600;font-size:14px;letter-spacing:3px;color:var(--gold);text-transform:uppercase}
+h1{font-size:clamp(38px,9vw,70px);line-height:1.05;margin:6px 0 12px;font-weight:700}
+h2{font-size:clamp(26px,5.5vw,40px);line-height:1.15;margin:6px 0 12px;font-weight:700}
+.grad{background:linear-gradient(90deg,#FFD66B,#FF8FB8,#8B7BFF);-webkit-background-clip:text;background-clip:text;color:transparent}
+p{margin:0 0 14px}.big{font-size:clamp(19px,3.4vw,24px)}
+.card{background:rgba(255,255,255,.08);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.18);border-radius:24px;padding:16px 20px;margin:16px 0}
+.sci{background:rgba(76,195,217,.16);border:1px solid rgba(120,215,235,.55);border-radius:16px;padding:12px 16px;margin:12px 0 4px;font-size:16.5px;color:#EAF9FF}
+.sci .lb{display:flex;align-items:center;gap:8px;font-weight:700;letter-spacing:2px;font-size:13px;margin-bottom:4px;color:#8FE3F5}
+.btn{font:600 20px Fredoka,"Trebuchet MS",sans-serif;border:0;border-radius:999px;padding:14px 34px;color:#2A1200;background:linear-gradient(135deg,#FFD66B,#FF8A4C);box-shadow:0 8px 22px rgba(255,138,76,.4);cursor:pointer;transition:transform .15s,box-shadow .2s}
+.btn:hover{transform:translateY(-2px) scale(1.04);box-shadow:0 12px 28px rgba(255,138,76,.55)}
+.btn[disabled]{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none;background:rgba(255,255,255,.2);color:#fff}
+.btn.ghost{background:transparent;color:var(--text);border:2px solid rgba(255,255,255,.5);box-shadow:none}
+.btn.ghost.sel{background:linear-gradient(135deg,#FFD66B,#FF8A4C);color:#2A1200;border-color:transparent}
+button:focus-visible{outline:3px solid #fff;outline-offset:3px}
+.row{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin:18px 0}
+.tag{display:inline-block;padding:3px 4px;font-size:15px;font-weight:500;margin:2px 14px 2px 0;color:#F1E9FF}
+.tag::before{content:"";display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px;background:#fff}
+.tag.g::before{background:var(--gold)}.tag.v::before{background:var(--violet)}.tag.o::before{background:var(--orange)}.tag.p::before{background:var(--pink)}
+.scene{border-radius:22px;overflow:hidden;border:1px solid rgba(255,255,255,.22);margin:12px 0;line-height:0;box-shadow:0 12px 30px rgba(0,0,0,.35)}
+.scene svg{width:100%;height:auto;display:block}
+.bob{animation:bob 3.5s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-6px)}}
+#r3{position:relative;height:350px;border-radius:24px;overflow:hidden;border:1px solid rgba(255,255,255,.22);background:radial-gradient(circle at 50% 30%,#4A2E8E,#1A1245);margin:12px 0}
+#r3 canvas{width:100%;height:100%;display:block;touch-action:pan-y;cursor:grab}
+#r3 small{position:absolute;left:0;right:0;bottom:8px;text-align:center;font-size:13px;opacity:.8;pointer-events:none}
+#pb{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.pbtn{font:600 16px Fredoka,sans-serif;border:2px solid rgba(255,255,255,.55);background:rgba(255,255,255,.1);color:var(--text);border-radius:12px;padding:8px 14px;cursor:pointer;transition:all .2s}
+.pbtn:hover{background:rgba(255,255,255,.22)}
+.pbtn.on{background:linear-gradient(135deg,#FFD66B,#FF8A4C);color:#2A1200;border-color:transparent;box-shadow:0 0 18px rgba(255,200,87,.7)}
+#pinfo{min-height:92px}#pinfo b{color:var(--gold);font-size:20px}
+.stop{padding:0;overflow:hidden}
+.sh{display:flex;align-items:center;gap:12px;width:100%;text-align:left;font:inherit;color:inherit;background:none;border:0;padding:16px 20px;cursor:pointer;transition:background .2s}
+.sh:hover{background:rgba(255,255,255,.1)}
+.sh .n{flex:none;width:40px;height:40px;line-height:40px;text-align:center;border-radius:50%;border:2px solid var(--gold);color:var(--gold);font-weight:700}
+.sh .t{font-weight:700;font-size:22px;flex:1}
+.sh svg{flex:none;transition:transform .3s}.stop.open .sh svg{transform:rotate(180deg)}
+.sb{display:none;padding:0 20px 18px}.stop.open .sb{display:block;animation:up .5s}
+#wsc .wet,#wsc .dry{transition:opacity 1.3s}#wsc .wet{opacity:0}#wsc.ago .wet{opacity:1}#wsc.ago .dry{opacity:0}
+.clues{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:14px}
+.clue{padding:10px;font-size:16px;margin:0}.clue .ph{border-radius:14px;overflow:hidden;line-height:0;margin-bottom:8px;aspect-ratio:1/1;background:#2a2060;display:flex;align-items:center;justify-content:center}
+.clue .ph img{width:100%;height:100%;object-fit:cover;display:block}
+.clue .miss{line-height:1.4;padding:14px;text-align:center;font-size:14px}.clue .miss a{color:#8FE3F5}
+.clue b{color:var(--gold);font-size:19px}.clue small{display:block;opacity:.75;font-size:12.5px;margin-top:4px}
+.emo{font:600 16px Fredoka,sans-serif;color:var(--text);background:rgba(255,255,255,.09);border:1.5px solid rgba(255,255,255,.4);border-radius:22px;cursor:pointer;transition:transform .2s,box-shadow .2s;padding:12px 16px 8px;width:112px}
+.emo svg{width:62px;height:62px;display:block;margin:0 auto 4px}
+.emo:hover,.tile:hover{transform:translateY(-4px) scale(1.04);box-shadow:0 10px 26px rgba(139,123,255,.5)}
+.emo.sel{background:rgba(255,200,87,.25);border-color:var(--gold);transform:scale(1.08)}
+.picks{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+.tile{font:600 17px Fredoka,sans-serif;color:var(--text);text-align:left;background:rgba(255,255,255,.09);border:1.5px solid rgba(255,255,255,.4);border-radius:22px;padding:8px 8px 12px;cursor:pointer;transition:transform .2s,box-shadow .2s}
+.tile .art{border-radius:16px;overflow:hidden;line-height:0;margin-bottom:8px}.tile .art svg{width:100%;height:auto;display:block}
+.tile span{display:block;padding:0 6px}
+.opt{display:block;width:100%;text-align:left;font:500 18px Fredoka,sans-serif;color:var(--text);background:rgba(255,255,255,.09);border:1.5px solid rgba(255,255,255,.4);border-radius:18px;padding:13px 18px;margin:10px 0;cursor:pointer}
+.opt:hover{background:rgba(255,255,255,.18)}.opt.good{background:#1F9D6B;border-color:#7CF0B8}.opt.bad{background:#B23A55;border-color:#FF9AB0}
+.locked .opt{pointer-events:none;cursor:default}.locked .opt:not(.good):not(.bad){opacity:.5}
+.seal{display:block;margin:10px auto;background:none;border:0;cursor:pointer;color:var(--text);font:600 20px Fredoka,sans-serif}
+.seal svg{width:230px;height:230px;display:block;margin:0 auto 6px;animation:orb 2.2s ease-in-out infinite;filter:drop-shadow(0 0 28px rgba(255,200,87,.8))}
+.seal.shake svg{animation:shk .12s linear infinite}
+@keyframes orb{50%{transform:scale(1.07) translateY(-6px)}}@keyframes shk{25%{transform:translateX(-7px) rotate(-3deg)}75%{transform:translateX(7px) rotate(3deg)}}
+#cardBox{position:relative;margin:10px auto;display:flex;justify-content:center;perspective:900px}
+#cardBox .rays{position:absolute;left:50%;top:50%;width:150vmin;height:150vmin;margin:-75vmin 0 0 -75vmin;background:repeating-conic-gradient(from 0deg,rgba(255,226,122,.28) 0 6deg,transparent 6deg 18deg);-webkit-mask:radial-gradient(circle,#000 0,transparent 65%);mask:radial-gradient(circle,#000 0,transparent 65%);animation:spin 24s linear infinite;pointer-events:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+#tilt{position:relative;width:min(300px,80vw);border-radius:26px;animation:flip 1s cubic-bezier(.2,1.4,.4,1) both,sway 6s ease-in-out 1s infinite;transition:transform .15s;filter:drop-shadow(0 18px 34px rgba(0,0,0,.55)) drop-shadow(0 0 30px var(--glow,#FFC857))}
+@keyframes flip{from{transform:rotateY(100deg) scale(.4);opacity:0}to{transform:none;opacity:1}}
+@keyframes sway{50%{transform:rotateY(8deg) rotateX(-3deg)}}
+#tilt.moving{animation:none}
+#tilt svg{display:block;width:100%;height:auto;border-radius:26px}
+.holo{position:absolute;inset:0;border-radius:26px;pointer-events:none;mix-blend-mode:screen;opacity:.65;background:linear-gradient(115deg,transparent 18%,rgba(255,255,255,.7) 32%,rgba(255,130,200,.45) 42%,rgba(120,230,255,.45) 52%,rgba(255,240,150,.4) 60%,transparent 74%);background-size:260% 260%;background-position:var(--hx,0%) var(--hy,50%);animation:shine 4.5s ease-in-out infinite}
+@keyframes shine{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+#tilt.moving .holo{animation:none}
+.tw{animation:tw2 1.8s ease-in-out infinite}@keyframes tw2{50%{opacity:.15}}
+.dust{stroke-dasharray:30 18;animation:dr 3s linear infinite}@keyframes dr{to{stroke-dashoffset:-96}}
+.pulse{animation:tw2 2s ease-in-out infinite}
+.sn{animation:fall 5s linear infinite}@keyframes fall{from{transform:translateY(-12px)}to{transform:translateY(170px)}}
+.hide{display:none!important}.src{font-size:13px;opacity:.75;margin-top:26px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<linearGradient id="gold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFEBB5"/><stop offset="1" stop-color="#F0B450"/></linearGradient>
+<linearGradient id="pan" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6E76F0"/><stop offset="1" stop-color="#2E2A7A"/></linearGradient></defs>
+<symbol id="rover" viewBox="0 0 160 100"><path d="M32 80 L60 58 L80 82 M128 80 L100 58" stroke="#C9CCE8" stroke-width="5" fill="none"/><circle cx="32" cy="80" r="13" fill="#2A2D4A" stroke="#C9CCE8" stroke-width="4"/><circle cx="80" cy="82" r="13" fill="#2A2D4A" stroke="#C9CCE8" stroke-width="4"/><circle cx="128" cy="80" r="13" fill="#2A2D4A" stroke="#C9CCE8" stroke-width="4"/><circle cx="32" cy="80" r="4" fill="#C9CCE8"/><circle cx="80" cy="82" r="4" fill="#C9CCE8"/><circle cx="128" cy="80" r="4" fill="#C9CCE8"/><rect x="30" y="38" width="100" height="26" rx="9" fill="url(#gold)"/><rect x="22" y="30" width="116" height="10" rx="4" fill="url(#pan)" stroke="#C9CCE8" stroke-width="2"/><rect x="41" y="14" width="3" height="17" fill="#E7E9FF"/><ellipse cx="42" cy="12" rx="12" ry="5" fill="#FFC857"/><rect x="112" y="8" width="5" height="23" fill="#E7E9FF"/><rect x="103" y="2" width="23" height="12" rx="4" fill="#E7E9FF"/><circle cx="110" cy="8" r="3.4" fill="#14123A"/><circle cx="120" cy="8" r="3.4" fill="#14123A"/><circle cx="111" cy="7" r="1" fill="#fff"/><circle cx="121" cy="7" r="1" fill="#fff"/><path d="M130 52 L146 60 L152 70" stroke="#E7E9FF" stroke-width="5" stroke-linecap="round" fill="none"/><circle cx="153" cy="72" r="5" fill="#FF7A45"/></symbol>
+<symbol id="curio" viewBox="0 0 160 100"><path d="M30 80L58 60L82 82M130 80L104 60" stroke="#B8C2D6" stroke-width="5" fill="none"/><circle cx="30" cy="80" r="13" fill="#2A2D4A" stroke="#B8C2D6" stroke-width="4"/><circle cx="80" cy="82" r="13" fill="#2A2D4A" stroke="#B8C2D6" stroke-width="4"/><circle cx="130" cy="80" r="13" fill="#2A2D4A" stroke="#B8C2D6" stroke-width="4"/><rect x="34" y="36" width="92" height="26" rx="6" fill="#C8D3E2"/><rect x="30" y="28" width="100" height="10" rx="3" fill="#9AA8BF"/><rect x="4" y="34" width="30" height="16" rx="3" fill="#6B7A99"/><path d="M9 34v16M15 34v16M21 34v16M27 34v16" stroke="#3F4A66" stroke-width="2"/><rect x="109" y="8" width="6" height="22" fill="#E7E9FF"/><rect x="99" y="0" width="26" height="12" rx="3" fill="#E7E9FF"/><circle cx="108" cy="6" r="3.5" fill="#14123A"/><circle cx="118" cy="6" r="2.4" fill="#FF9A3D"/><path d="M126 50L146 56L152 66" stroke="#E7E9FF" stroke-width="5" stroke-linecap="round" fill="none"/><circle cx="153" cy="68" r="8" fill="#FF9A3D"/></symbol>
+<symbol id="perse" viewBox="0 0 160 100"><path d="M30 80L58 62L82 83M130 80L104 62" stroke="#fff" stroke-width="5" fill="none"/><circle cx="30" cy="80" r="15" fill="#2A2D4A" stroke="#fff" stroke-width="4"/><circle cx="80" cy="83" r="15" fill="#2A2D4A" stroke="#fff" stroke-width="4"/><circle cx="130" cy="80" r="15" fill="#2A2D4A" stroke="#fff" stroke-width="4"/><rect x="28" y="34" width="104" height="30" rx="8" fill="#fff"/><rect x="28" y="50" width="104" height="6" fill="#FF5A4D"/><rect x="24" y="26" width="112" height="9" rx="3" fill="#E1E5F2"/><rect x="112" y="8" width="5" height="20" fill="#F2F4FF"/><rect x="100" y="0" width="29" height="12" rx="3" fill="#F2F4FF"/><circle cx="108" cy="6" r="3" fill="#14123A"/><circle cx="121" cy="6" r="3" fill="#14123A"/><path d="M132 48L150 52L154 64" stroke="#fff" stroke-width="6" stroke-linecap="round" fill="none"/><circle cx="155" cy="67" r="6" fill="#FF5A4D"/></symbol>
+<symbol id="flask" viewBox="0 0 24 24"><path d="M9 2h6v2h-1v5l5 9a2 2 0 0 1-1.8 3H6.8A2 2 0 0 1 5 18l5-9V4H9z" fill="#fff"/><path d="M8 15h8l2.2 4H5.8z" fill="#8FE3F5"/></symbol></svg>
+<div id="stars" aria-hidden="true"></div><div id="shoot"></div><div id="ground"></div><div id="dust"></div><canvas id="fx"></canvas><div id="flash"></div>
+<div id="hud"><button id="back" class="hide" aria-label="Go back one page"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>Back</button><b>MISSION</b><div id="trk"><div id="fill"></div><svg id="hr" viewBox="0 0 160 100" height="24" aria-hidden="true"><use href="#rover" width="160" height="100"/></svg></div></div>
+<main>
+
+<section class="screen center on" id="start">
+<div class="eyebrow">A Mars rover story</div>
+<h1 class="grad">OPPORTUNITY</h1>
+<p class="big">NASA expected her to last 3 months. She lasted 14 years!</p>
+<div class="scene"><svg viewBox="0 0 440 200" role="img" aria-label="Cartoon Mars landscape with a rover"><defs><linearGradient id="hs" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#120B3A"/><stop offset=".6" stop-color="#5B2A86"/><stop offset="1" stop-color="#FF8A5C"/></linearGradient></defs><rect width="440" height="200" fill="url(#hs)"/><circle cx="340" cy="62" r="28" fill="#FFE7A8"/><circle cx="332" cy="55" r="5" fill="#F5CF86"/><circle cx="350" cy="72" r="7" fill="#F5CF86"/><circle cx="60" cy="30" r="2" fill="#fff"/><circle cx="130" cy="55" r="1.6" fill="#fff"/><circle cx="220" cy="22" r="2" fill="#fff"/><circle cx="410" cy="26" r="1.6" fill="#fff"/><path d="M0 150 L60 110 L110 140 L170 100 L240 145 L300 120 L360 150 L440 115 V200 H0Z" fill="#7A2B4F"/><path d="M0 172 Q110 150 220 166 T440 160 V200 H0Z" fill="#C1440E"/><g class="bob"><use href="#rover" x="145" y="100" width="150" height="94"/></g></svg></div>
+<p>Press start and travel through the story of a robot that never gave up.</p>
+<div class="row"><button class="btn" data-go="l1">START MISSION</button></div>
+<p class="src">Mars photos: NASA/JPL-Caltech/Cornell/USGS. Scenes and diagrams are illustrations made for this story. Facts from NASA Science and NASA/JPL.</p>
+</section>
+
+<section class="screen" id="l1">
+<div class="eyebrow">Level 1 · A name from a kid</div>
+<h2>A girl looked at the stars</h2>
+<div class="scene"><svg viewBox="0 0 440 200" role="img" aria-label="A girl on a hill looks up at the night sky and a red Mars"><defs><linearGradient id="ns" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0A0830"/><stop offset="1" stop-color="#4B2A86"/></linearGradient><radialGradient id="mg"><stop offset="0" stop-color="#FF7A45" stop-opacity=".6"/><stop offset="1" stop-color="#FF7A45" stop-opacity="0"/></radialGradient></defs><rect width="440" height="200" fill="url(#ns)"/><g fill="#fff"><circle cx="40" cy="30" r="1.6"/><circle cx="90" cy="70" r="1.2"/><circle cx="150" cy="25" r="2"/><circle cx="210" cy="60" r="1.4"/><circle cx="260" cy="20" r="1.8"/><circle cx="395" cy="40" r="1.6"/><circle cx="420" cy="90" r="1.2"/><circle cx="120" cy="110" r="1.3"/><circle cx="300" cy="105" r="1.5"/></g><circle cx="330" cy="70" r="46" fill="url(#mg)"/><circle cx="330" cy="70" r="22" fill="#D9573A"/><circle cx="322" cy="64" r="4" fill="#B8432A"/><circle cx="338" cy="78" r="5" fill="#B8432A"/><path d="M180 20L230 50" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".8"/><path d="M0 200V160Q80 140 160 168T300 175V200Z" fill="#0B0A20"/><circle cx="88" cy="134" r="8" fill="#F5C9A0"/><path d="M79 133q9-16 18 0q-4-5-9-5q-5 0-9 5z" fill="#2B1810"/><path d="M80 142q8-4 16 0l4 26H76z" fill="#FF8FB8"/><path d="M96 146L132 112" stroke="#F5C9A0" stroke-width="5" stroke-linecap="round"/></svg></div>
+<span class="tag g">Sofi Collis, age 9, from Arizona</span><span class="tag v">Nearly 10,000 essays in the contest</span><span class="tag o">Her names: Spirit and Opportunity</span>
+<p>In 2003, NASA and the LEGO company held a contest to name two Mars rovers. In her essay, Sofi wrote that the sparkly night sky made her feel better and made her dream she could fly there. Her winning words became the names of two robots.</p>
+<div class="card"><b>Who is Opportunity?</b><br>A robot geologist on Mars, about the size of a golf cart, with six wheels, solar panels and cameras for eyes. She launched in July 2003 and landed in January 2004, bouncing in airbags like a beach ball into a small crater called Eagle Crater.</div>
+<div class="sci"><div class="lb"><svg width="18" height="18" aria-hidden="true"><use href="#flask" width="18" height="18"/></svg>SCIENCE</div>Orbiters had spotted a mineral called hematite on Meridiani Planum. On Earth it often forms near water, so NASA sent her there to ask: was Mars once wet?</div>
+<div class="row"><button class="btn" data-go="parts">Look inside Opportunity</button></div>
+</section>
+
+<section class="screen" id="parts">
+<div class="eyebrow">Look inside</div>
+<h2>Meet my body parts</h2>
+<p>Drag to spin her around. Tap a name (or the part itself) and it lights up!</p>
+<div id="r3"><canvas id="cv3" aria-label="3D model of the Opportunity rover"></canvas><small>Drag to rotate · tap a part</small></div>
+<div id="pb"></div>
+<div class="card" id="pinfo" aria-live="polite">Tap a name to light up that part of me.</div>
+<div class="row"><button class="btn" data-go="l2">Follow the long road</button></div>
+</section>
+
+<section class="screen" id="l2">
+<div class="eyebrow">Level 2 · The long road</div>
+<h2>Hard roads are okay</h2>
+<p>Opportunity faced many hard times. Tap each stop to see how she kept going.</p>
+<div class="card stop"><button class="sh" aria-expanded="false"><span class="n">1</span><span class="t">She lasted 14 years</span><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div class="sb">
+<div class="scene"><svg viewBox="0 0 440 150" role="img" aria-label="Rover on a long dotted road between a near flag and a far flag"><rect width="440" height="150" fill="#2A1F6B"/><circle cx="30" cy="20" r="2" fill="#fff"/><circle cx="150" cy="30" r="2" fill="#fff"/><circle cx="300" cy="18" r="2" fill="#fff"/><circle cx="410" cy="34" r="2" fill="#fff"/><path d="M0 128 Q110 112 220 126 T440 122 V150 H0Z" fill="#C1440E"/><path d="M40 130 H400" stroke="#FFF6E5" stroke-width="4" stroke-dasharray="1 10" stroke-linecap="round"/><path d="M70 130V90" stroke="#fff" stroke-width="3"/><polygon points="70,90 98,100 70,110" fill="#FFC857"/><path d="M400 130V58" stroke="#fff" stroke-width="3"/><polygon points="400,58 428,70 400,82" fill="#FF8FB8"/><use href="#rover" x="195" y="66" width="100" height="63"/></svg></div>
+<span class="tag g">NASA's plan: about 3 months</span><span class="tag v">What happened: about 14 years</span>
+<p>She worked more than 50 times longer than planned. A baby born the day she landed would be 14 years old when she went quiet.</p>
+<div class="sci"><div class="lb"><svg width="18" height="18" aria-hidden="true"><use href="#flask" width="18" height="18"/></svg>SCIENCE</div>NASA counts time on Mars in sols. One sol is one Mars day, about 24 hours 40 minutes. NASA planned 90 sols (about 3 months) and she worked for 5,111 sols. Wind gusts and dust devils sometimes blew dust off her solar panels, which helped a lot.</div></div></div>
+<div class="card stop"><button class="sh" aria-expanded="false"><span class="n">2</span><span class="t">She drove about 45 km</span><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div class="sb">
+<div class="scene"><svg viewBox="0 0 440 150" role="img" aria-label="Winding route from a small crater to a big crater"><rect width="440" height="150" fill="#B8532B"/><circle cx="90" cy="40" r="22" fill="#A24523"/><circle cx="330" cy="120" r="16" fill="#A24523"/><circle cx="30" cy="112" r="11" fill="#8E3A1A" stroke="#FFF6E5" stroke-width="3"/><circle cx="405" cy="40" r="30" fill="#8E3A1A" stroke="#FFF6E5" stroke-width="3"/><path d="M30 112 C110 30 170 150 250 80 S380 70 405 40" stroke="#FFF6E5" stroke-width="4" stroke-dasharray="2 9" stroke-linecap="round" fill="none"/><use href="#rover" x="170" y="40" width="64" height="40"/></svg></div>
+<span class="tag g">Start: Eagle Crater</span><span class="tag v">Finish: Endeavour Crater</span><br><span class="tag o">About 110 laps of a 400 m school track</span><span class="tag p">About 430 football fields</span>
+<div class="sci"><div class="lb"><svg width="18" height="18" aria-hidden="true"><use href="#flask" width="18" height="18"/></svg>SCIENCE</div>At Endeavour she found clay minerals, which form in gentler water than the acidic water seen earlier. On the way she also found Heat Shield Rock, the first meteorite ever identified on another planet.</div></div></div>
+<div class="card stop"><button class="sh" aria-expanded="false"><span class="n">3</span><span class="t">She survived Martian winters</span><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div class="sb">
+<div class="scene"><svg viewBox="0 0 440 170" role="img" aria-label="Frosty Mars winter: pale low sun, snow-like frost, a rover parked on a slope facing the sun and a thermometer showing freezing cold"><defs><linearGradient id="wk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0F1E4A"/><stop offset=".55" stop-color="#6F93CF"/><stop offset="1" stop-color="#E4EEFF"/></linearGradient><linearGradient id="wg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E9DDE6"/><stop offset="1" stop-color="#B9A3B8"/></linearGradient></defs><rect width="440" height="170" fill="url(#wk)"/><circle cx="372" cy="104" r="17" fill="#F7FAFF"/><circle cx="372" cy="104" r="30" fill="#fff" opacity=".18"/><path d="M0 108L70 84L130 104L210 80L290 106L360 88L440 108V170H0Z" fill="#9FB3DA"/><path d="M0 120L440 150V170H0Z" fill="url(#wg)"/><path d="M0 120L440 150" stroke="#fff" stroke-width="3" opacity=".8"/><ellipse cx="60" cy="146" rx="42" ry="6" fill="#fff" opacity=".8"/><ellipse cx="300" cy="158" rx="55" ry="6" fill="#fff" opacity=".8"/><ellipse cx="245" cy="143" rx="62" ry="5" fill="#3D3A6B" opacity=".35"/><g transform="rotate(7 160 100)"><use href="#rover" x="100" y="58" width="120" height="75"/></g><g fill="#fff"><circle class="sn" cx="30" cy="10" r="2.5"/><circle class="sn" cx="95" cy="-30" r="2" style="animation-delay:1.2s"/><circle class="sn" cx="160" cy="0" r="3" style="animation-delay:2.4s"/><circle class="sn" cx="230" cy="-20" r="2.2" style="animation-delay:.6s"/><circle class="sn" cx="300" cy="5" r="2.8" style="animation-delay:3.1s"/><circle class="sn" cx="350" cy="-15" r="2" style="animation-delay:1.8s"/><circle class="sn" cx="410" cy="8" r="2.6" style="animation-delay:2.9s"/></g><rect x="16" y="14" width="14" height="52" rx="7" fill="#fff"/><circle cx="23" cy="72" r="11" fill="#fff"/><rect x="20" y="52" width="6" height="14" fill="#5BC0FF"/><circle cx="23" cy="72" r="7.5" fill="#5BC0FF"/></svg></div>
+<span class="tag g">Parked on a slope that faces the sun</span><span class="tag v">Frost and freezing nights</span>
+<p>Winter nights on Mars are far colder than a freezer, and the sunlight gets weak. Her team on Earth kept solving problems for her.</p>
+<div class="sci"><div class="lb"><svg width="18" height="18" aria-hidden="true"><use href="#flask" width="18" height="18"/></svg>SCIENCE</div>Engineers parked her on north-facing slopes in winter so her panels caught more sunlight. When a front wheel stopped steering well they drove her backward for years, and they even changed how she used her memory when it began to fail.</div></div></div>
+<p class="center" id="l2hint">Open all 3 stops to unlock the next page (0/3)</p>
+<div class="row"><button class="btn" id="l2next" data-go="water" disabled>Continue</button></div>
+</section>
+
+<section class="screen" id="water">
+<div class="eyebrow">Science stop · Was Mars wet?</div>
+<h2>Imagine Mars with water</h2>
+<p>Opportunity found clues that liquid water once covered places on Mars. Travel back in time and see how scientists imagine it.</p>
+<div class="row"><button class="btn ghost sel" id="tdry">Mars today</button><button class="btn ghost" id="tago">Long ago</button></div>
+<div class="scene"><svg id="wsc" viewBox="0 0 440 210" role="img" aria-label="Artist-style picture: Mars today is dry; long ago it may have had shallow water"><defs><linearGradient id="dsk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#C77A55"/><stop offset="1" stop-color="#F3C08C"/></linearGradient><linearGradient id="wsk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5BB4F0"/><stop offset="1" stop-color="#BFE8FF"/></linearGradient><linearGradient id="wtr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3FA6E8"/><stop offset="1" stop-color="#1F5FB8"/></linearGradient></defs>
+<rect width="440" height="210" fill="url(#dsk)"/><rect class="wet" width="440" height="210" fill="url(#wsk)"/><circle cx="360" cy="48" r="24" fill="#FFE7A8" opacity=".85"/>
+<ellipse class="wet" cx="90" cy="40" rx="44" ry="13" fill="#fff"/><ellipse class="wet" cx="130" cy="34" rx="28" ry="12" fill="#fff"/><ellipse class="wet" cx="270" cy="62" rx="50" ry="13" fill="#fff"/>
+<path d="M0 130 L60 98 L120 125 L190 92 L260 128 L330 100 L440 130 V210 H0Z" fill="#9A4A2B"/><path d="M0 150 Q110 132 220 148 T440 144 V210 H0Z" fill="#B65A32"/>
+<path class="wet" d="M0 158 Q110 142 220 156 T440 152 V210 H0Z" fill="url(#wtr)"/><path class="wet" d="M30 176 q14 -8 28 0 t28 0 M190 190 q14 -8 28 0 t28 0 M310 170 q14 -8 28 0 t28 0" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/>
+<g class="dry"><use href="#rover" x="40" y="104" width="110" height="69"/></g></svg></div>
+<p class="center" id="wcap" aria-live="polite">Mars today: cold, dry and dusty.</p>
+<h2>Real clues from Opportunity's cameras</h2>
+<div class="clues">
+<div class="card clue"><div class="ph"><img src="https://www.nasa.gov/wp-content/uploads/2023/03/pia19113_1mp084iof013ort000p2956l257f1_post.jpg" alt="Real close-up photo of small round Martian blueberries" loading="lazy" data-page="https://www.nasa.gov/image-article/martian-concretions-near-fram-crater/"></div><b>Blueberries up close</b><br>Tiny round balls of hematite, only 3 cm wide in this view. They grew slowly in rock soaked with water, like pearls forming.<small>Real photo. NASA/JPL-Caltech/Cornell/USGS</small></div>
+<div class="card clue"><div class="ph"><img src="https://photojournal.jpl.nasa.gov/jpeg/PIA05634.jpg" alt="Real photo of the rock called Berry Bowl with blueberries in it" loading="lazy" data-page="https://photojournal.jpl.nasa.gov/catalog/PIA05634"></div><b>The Berry Bowl rock</b><br>In this rock the balls sit inside it like berries in a bowl. Studying it helped scientists test the idea that the hematite formed in water.<small>Real photo. NASA/JPL/Cornell</small></div>
+<div class="card clue"><div class="ph"><img src="https://photojournal.jpl.nasa.gov/jpeg/PIA05588.jpg" alt="Real photo of grey blueberries scattered on the Martian plains" loading="lazy" data-page="https://photojournal.jpl.nasa.gov/catalog/PIA05588"></div><b>Blueberries everywhere</b><br>The same grey balls cover the plains outside the crater too. So the water story was big, not just in one small place.<small>Real photo. NASA/JPL/Cornell</small></div>
+</div>
+<div class="sci"><div class="lb"><svg width="18" height="18" aria-hidden="true"><use href="#flask" width="18" height="18"/></svg>MORE CLUES</div>Opportunity also found rock layers shaped like ripples, which show water once flowed over sand, and salty sulfate minerals, which are left behind when salty water dries up, just like the salt left after seawater dries.</div>
+<div class="row"><button class="btn" data-go="l3">Continue the road</button></div>
+</section>
+
+<section class="screen" id="l3">
+<div class="eyebrow">Level 3 · The great dust storm</div>
+<h2>The sky went dark</h2>
+<div class="scene"><svg viewBox="0 0 440 150" role="img" aria-label="Dust storm around a quiet rover that gets no signal"><defs><linearGradient id="ds" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3A1C14"/><stop offset="1" stop-color="#7A3A1E"/></linearGradient></defs><rect width="440" height="150" fill="url(#ds)"/><circle cx="370" cy="36" r="20" fill="#FFD9A0" opacity=".3"/><path class="dust" d="M-10 30 q50 -22 100 0 t100 0 t100 0 t100 0" stroke="#FFD9A0" stroke-opacity=".35" stroke-width="6" fill="none" stroke-linecap="round"/><path class="dust" d="M-10 62 q50 -22 100 0 t100 0 t100 0 t100 0" stroke="#FFD9A0" stroke-opacity=".3" stroke-width="5" fill="none" stroke-linecap="round" style="animation-duration:4s"/><path d="M0 128 Q110 112 220 126 T440 122 V150 H0Z" fill="#4A2418"/><g style="filter:grayscale(1) brightness(.85)"><use href="#rover" x="170" y="62" width="100" height="63"/></g><path class="pulse" d="M200 52 a28 28 0 0 1 40 0 M190 42 a42 42 0 0 1 60 0" stroke="#fff" stroke-width="3" fill="none" stroke-dasharray="4 5" stroke-linecap="round"/></svg></div>
+<span class="tag o">June 2018: last contact</span><span class="tag">Feb 2019: mission complete</span>
+<p class="big">In 2018, a dust storm grew until it covered the whole planet. Sunlight could not reach Opportunity's panels. The team sent wake-up messages again and again. She never answered.</p>
+<div class="sci"><div class="lb"><svg width="18" height="18" aria-hidden="true"><use href="#flask" width="18" height="18"/></svg>SCIENCE</div>You may have seen the line "My battery is low and it's getting dark". It was a poetic paraphrase by a journalist, not a real transmission.</div>
+<div class="row"><button class="btn ghost" id="legacyBtn">But she was not forgotten...</button></div>
+<div class="card hide" id="legacy"><b>What Opportunity made possible</b>
+<div class="scene"><svg viewBox="0 0 440 150" role="img" aria-label="Three different rovers: Opportunity with solar panels, Curiosity with a tall mast, and Perseverance in white with a small helicopter"><defs><linearGradient id="lg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2A1F6B"/><stop offset="1" stop-color="#8A3F7A"/></linearGradient></defs><rect width="440" height="150" fill="url(#lg)"/><path d="M0 126 Q110 112 220 124 T440 120 V150 H0Z" fill="#C1440E"/><path d="M122 92 h26 M272 92 h26" stroke="#FFC857" stroke-width="4" stroke-dasharray="4 5" stroke-linecap="round"/><use href="#rover" x="12" y="52" width="108" height="68"/><use href="#curio" x="150" y="40" width="124" height="78"/><use href="#perse" x="298" y="48" width="130" height="81"/><g transform="translate(386 14)"><rect x="-12" y="6" width="24" height="5" rx="2" fill="#fff"/><path d="M-22 2h44" stroke="#FFC857" stroke-width="3" stroke-linecap="round"/><path d="M-6 11v6M6 11v6" stroke="#fff" stroke-width="2"/></g></svg></div>
+<span class="tag g">Opportunity: solar panels</span><span class="tag v">Curiosity (2012): nuclear battery, tall mast</span><span class="tag p">Perseverance (2021): nuclear battery, helicopter friend</span>
+<p>She showed that Mars once had water. That helped scientists choose where Curiosity and Perseverance should go, and it keeps the dream of bringing Mars rocks to Earth alive. Opportunity was abandoned, but never forgotten.</p>
+<div class="row"><button class="btn" data-go="done">Finish the mission</button></div></div>
+</section>
+
+<section class="screen center" id="done">
+<div class="eyebrow">Mission complete</div>
+<h1 class="grad">She was amazing!</h1>
+<p class="big">How do you feel about her story? Tap one!</p>
+<div class="row" id="emos"></div>
+<p id="emoMsg" class="big" aria-live="polite">&nbsp;</p>
+<div class="row"><button class="btn" data-go="quiz">Take the quiz</button></div>
+</section>
+
+<section class="screen" id="quiz">
+<div class="eyebrow" id="qn">Question 1 of 3</div>
+<h2 id="qt"></h2>
+<div id="qo"></div>
+<p id="qf" aria-live="polite"></p>
+<div class="row"><button class="btn hide" id="qnext">Next</button></div>
+</section>
+
+<section class="screen center" id="pick">
+<div class="eyebrow">Your turn</div>
+<h2>What do you like most about Opportunity?</h2>
+<p>Tap the picture you love most to get a mystery explorer card!</p>
+<div class="picks" id="picks"></div>
+</section>
+
+<section class="screen center" id="badge">
+<div class="eyebrow" id="bhead">Something is waiting for you...</div>
+<button class="seal" id="seal" aria-label="Tap to open your mystery card"><svg viewBox="0 0 200 200" aria-hidden="true"><defs><radialGradient id="orb" cx=".4" cy=".35"><stop offset="0" stop-color="#FFF6C8"/><stop offset=".45" stop-color="#FFB24A"/><stop offset="1" stop-color="#8B5CF6"/></radialGradient></defs><circle cx="100" cy="100" r="86" fill="url(#orb)" stroke="#fff" stroke-width="5"/><circle cx="100" cy="100" r="68" fill="none" stroke="#fff" stroke-width="2" stroke-dasharray="3 8" opacity=".8"/><text x="100" y="128" text-anchor="middle" font-family="Fredoka,sans-serif" font-weight="700" font-size="92" fill="#fff">?</text><path d="M30 40l3 8 8 3-8 3-3 8-3-8-8-3 8-3z M168 150l3 7 7 3-7 3-3 7-3-7-7-3 7-3z" fill="#fff"/></svg>Tap to open!</button>
+<div id="cardBox" class="hide"><div class="rays"></div><div id="tilt"><div id="cardArt"></div><div class="holo"></div></div></div>
+<p class="big hide" id="bq"></p>
+<div class="card hide" id="ba" style="text-align:left"></div>
+<div class="row hide" id="bbtns"><button class="btn" id="share">Share my card</button><button class="btn ghost" data-go="pick">Pick another favorite</button><button class="btn ghost" id="again">Play again</button></div>
+<p id="shareMsg" aria-live="polite"></p>
+</section>
+
+</main>
+<script>
+var $=function(i){return document.getElementById(i)};
+var order=['start','l1','parts','l2','water','l3','done','quiz','pick','badge'];
+var hist=[],curS='start';
+function go(id,isBack){
+  if(!isBack&&curS!==id)hist.push(curS);
+  curS=id;
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.toggle('on',s.id===id)});
+  document.body.classList.toggle('storm',id==='l3');
+  var pct=order.indexOf(id)/(order.length-1)*100;
+  $('fill').style.width=pct+'%';$('hr').style.left=pct+'%';
+  $('back').classList.toggle('hide',!hist.length);
+  window.scrollTo(0,0);
+  if(id==='parts')initParts();
+}
+document.querySelectorAll('[data-go]').forEach(function(b){b.addEventListener('click',function(){go(b.dataset.go)})});
+$('back').onclick=function(){if(hist.length)go(hist.pop(),true)};
+var st=$('stars');
+for(var i=0;i<70;i++){var d=document.createElement('i'),z=Math.random()*2.5+1;d.style.cssText='left:'+Math.random()*100+'vw;top:'+Math.random()*75+'vh;width:'+z+'px;height:'+z+'px;animation-delay:'+Math.random()*3+'s';st.appendChild(d)}
+document.addEventListener('pointermove',function(e){st.style.transform='translate('+((e.clientX/innerWidth-.5)*-14)+'px,'+((e.clientY/innerHeight-.5)*-14)+'px)'});
+
+/* Real photos: if one cannot load, show a link to the NASA page instead of fake art */
+document.querySelectorAll('.clue img').forEach(function(im){im.addEventListener('error',function(){
+  var d=document.createElement('div');d.className='miss';d.innerHTML='This NASA photo could not load here.<br><a href="'+im.dataset.page+'" target="_blank" rel="noopener">Open it on NASA\'s website</a>';im.replaceWith(d)})});
+
+/* Particle effects */
+var fx=$('fx'),fc=fx.getContext('2d'),ps=[],run=false;
+function fit(){fx.width=innerWidth;fx.height=innerHeight}fit();addEventListener('resize',fit);
+function shape(h,s){fc.beginPath();
+  if(h==='star'){for(var i=0;i<10;i++){var r=i%2?s*.45:s;fc.lineTo(Math.cos(i*Math.PI/5)*r,Math.sin(i*Math.PI/5)*r)}}
+  else if(h==='heart'){fc.moveTo(0,s*.4);fc.bezierCurveTo(-s,-s*.2,-s*.5,-s,0,-s*.45);fc.bezierCurveTo(s*.5,-s,s,-s*.2,0,s*.4)}
+  else if(h==='spark'){fc.moveTo(0,-s);fc.quadraticCurveTo(0,0,s,0);fc.quadraticCurveTo(0,0,0,s);fc.quadraticCurveTo(0,0,-s,0);fc.quadraticCurveTo(0,0,0,-s)}
+  else{fc.arc(0,0,s*.35,0,6.3)}
+  fc.closePath();fc.fill()}
+function tick(){fc.clearRect(0,0,fx.width,fx.height);ps=ps.filter(function(p){return p.l>0});
+  ps.forEach(function(p){p.x+=p.vx;p.y+=p.vy;p.vy+=.16;p.vx*=.985;p.l-=.013;p.r+=p.vr;fc.save();fc.globalAlpha=Math.max(p.l,0);fc.translate(p.x,p.y);fc.rotate(p.r);fc.fillStyle=p.c;shape(p.h,p.s);fc.restore()});
+  if(ps.length)requestAnimationFrame(tick);else{run=false}}
+function burst(x,y,cols,shapes,n){
+  if(matchMedia('(prefers-reduced-motion:reduce)').matches)return;
+  for(var i=0;i<n;i++){var a=Math.random()*6.283,sp=3+Math.random()*8;
+    ps.push({x:x,y:y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-3,l:1,r:Math.random()*6,vr:(Math.random()-.5)*.3,s:7+Math.random()*11,c:cols[i%cols.length],h:shapes[i%shapes.length]})}
+  if(!run){run=true;requestAnimationFrame(tick)}}
+
+/* 3D rover (built from simple shapes) */
+var PD={pancam:['Panoramic camera','My eyes! Two cameras on a mast about 1.5 m high take color 3D photos, so scientists can choose where I drive.'],
+ hazcam:['Hazard cameras','Cameras low on my front and back look for rocks and holes right in front of my wheels, so I do not get stuck.'],
+ antenna:['Antenna','This dish talks straight to Earth. My radio messages take several minutes to cross space.'],
+ panels:['Solar panels','They turn sunlight into electricity to charge my batteries. Dust on them means less power!'],
+ arm:['Robotic arm','My arm ends in a turret with four tools: a close-up camera, two instruments that identify minerals and elements, and a grinder that scrapes rocks to see inside.'],
+ wheels:['Six wheels','Each wheel has cleats like a tire tread, and a flexible suspension lets me climb over rocks without tipping over. I have three wheels on each side!'],
+ body:['Warm electronics box','This warm box protects my computer and batteries from freezing on cold Mars nights.']};
+function buildRover(T){
+  var root=new T.Group(),parts={};
+  ['wheels','body','panels','antenna','pancam','arm','hazcam'].forEach(function(n){parts[n]=new T.Group();root.add(parts[n])});
+  function mk(g,c,n,x,y,z,rx,ry,rz){var m=new T.Mesh(g,new T.MeshStandardMaterial({color:c,roughness:.5,metalness:.25}));m.position.set(x,y,z);m.rotation.set(rx||0,ry||0,rz||0);m.userData.part=n;parts[n].add(m);return m}
+  var B=function(w,h,d){return new T.BoxGeometry(w,h,d)},C=function(r,h,s){return new T.CylinderGeometry(r,r,h,s||20)};
+  var disc=new T.Mesh(C(3.9,.1,56),new T.MeshStandardMaterial({color:0xB5532B,roughness:.95}));disc.position.y=-.05;root.add(disc);
+  for(var i=0;i<14;i++){var a=i*2.4,r=2.4+(i%4)*.35,s=.1+(i%3)*.07,rk=new T.Mesh(new T.SphereGeometry(s,8,8),new T.MeshStandardMaterial({color:0x8E3A1A,roughness:1}));rk.position.set(Math.cos(a)*r,s*.4,Math.sin(a)*r);rk.scale.y=.6;root.add(rk)}
+  mk(B(3.2,.9,2),0xE9C46A,'body',0,1.5,0);mk(B(3.3,.08,2.1),0xB8862F,'body',0,1.98,0);
+  mk(B(4,.12,3.1),0x3F43B0,'panels',0,2.12,0);mk(B(4.1,.1,.08),0xC9CCE8,'panels',0,2.12,1.58);mk(B(4.1,.1,.08),0xC9CCE8,'panels',0,2.12,-1.58);
+  for(i=-3;i<=3;i++)mk(B(.03,.02,3.0),0x1B1F4B,'panels',i*.5,2.19,0);
+  for(i=-2;i<=2;i++)mk(B(3.9,.02,.03),0x1B1F4B,'panels',0,2.19,i*.6);
+  [-1.5,0,1.5].forEach(function(x){[-1.35,1.35].forEach(function(z){
+    mk(C(.55,.4,28),0x2B2D42,'wheels',x,.55,z,Math.PI/2);mk(C(.22,.46,16),0xC9CCE8,'wheels',x,.55,z,Math.PI/2);
+    for(var k=0;k<12;k++){var an=k*Math.PI/6;mk(B(.12,.1,.42),0x555878,'wheels',x+Math.cos(an)*.58,.55+Math.sin(an)*.58,z,0,0,an)}
+    mk(B(.12,.9,.12),0xC9CCE8,'wheels',x,1.05,z)})});
+  [-1.35,1.35].forEach(function(z){mk(B(3.3,.1,.1),0xC9CCE8,'wheels',0,.55,z);mk(B(1.8,.1,.1),0xC9CCE8,'wheels',.75,1.15,z*.9,0,0,.5);mk(B(.12,.12,.5),0xC9CCE8,'wheels',0,1.5,z>0?1.15:-1.15)});
+  mk(B(.3,.2,.3),0xC9CCE8,'pancam',1.2,2.3,.5);mk(C(.06,1.45,12),0xE7E9FF,'pancam',1.2,3.0,.5);
+  mk(B(.62,.3,.36),0xE7E9FF,'pancam',1.2,3.85,.5);
+  [1.0,1.4].forEach(function(x){mk(C(.09,.1,14),0x14123A,'pancam',x,3.85,.7,Math.PI/2);mk(new T.SphereGeometry(.05,8,8),0x6ECFFF,'pancam',x,3.85,.76)});
+  mk(B(.2,.14,.2),0x14123A,'pancam',1.2,4.07,.5);
+  mk(C(.04,.9,10),0xE7E9FF,'antenna',-1.2,2.6,-.7);mk(B(.3,.1,.3),0xC9CCE8,'antenna',-1.2,2.2,-.7);
+  mk(C(.5,.06,32),0xFFC857,'antenna',-1.2,3.1,-.7,.9);mk(C(.04,.35,8),0xE7E9FF,'antenna',-1.2,3.32,-.52,.9);
+  mk(C(.06,.9,8),0xE7E9FF,'antenna',-.4,2.55,.9);mk(new T.SphereGeometry(.07,8,8),0xFF7A45,'antenna',-.4,3.02,.9);
+  [-.5,.5].forEach(function(z){mk(B(.16,.16,.22),0x14123A,'hazcam',1.66,1.15,z);mk(B(.16,.16,.22),0x14123A,'hazcam',-1.66,1.15,z);mk(new T.SphereGeometry(.05,8,8),0x6ECFFF,'hazcam',1.76,1.15,z)});
+  mk(B(.5,.18,.2),0xE7E9FF,'arm',1.75,1.35,.35);mk(B(.9,.12,.12),0xE7E9FF,'arm',2.05,1.3,.35);mk(new T.SphereGeometry(.11,12,12),0xC9CCE8,'arm',2.5,1.3,.35);
+  mk(B(.12,.75,.12),0xE7E9FF,'arm',2.5,.92,.35);mk(C(.28,.2,24),0xB8862F,'arm',2.5,.5,.35);
+  [[.2,.2,0xFF7A45],[-.2,.2,0xFFC857],[.2,-.2,0xFFFFFF],[-.2,-.2,0x14123A]].forEach(function(t){mk(C(.07,.26,10),t[2],'arm',2.5+t[0],.33,.35+t[1])});
+  return {root:root,parts:parts};
+}
+var P3={ready:false,failed:false,sel:null};
+function selPart(k){
+  document.querySelectorAll('.pbtn').forEach(function(b){b.classList.toggle('on',b.dataset.p===k)});
+  $('pinfo').innerHTML='<b>'+PD[k][0]+'</b><br>'+PD[k][1];
+  P3.sel=k;
+  if(P3.ready)Object.keys(P3.parts).forEach(function(n){P3.parts[n].traverse(function(m){if(!m.isMesh)return;
+    m.material.emissive.setHex(n===k?0xFFA800:0x000000);m.material.emissiveIntensity=n===k?.85:0;
+    m.material.transparent=true;m.material.opacity=n===k?1:.18;m.material.needsUpdate=true})});
+}
+Object.keys(PD).forEach(function(k){var b=document.createElement('button');b.className='pbtn';b.dataset.p=k;b.textContent=PD[k][0];b.onclick=function(){selPart(k)};$('pb').appendChild(b)});
+function initParts(){
+  if(P3.ready||P3.failed)return;
+  try{
+    var cv=$('cv3'),box=$('r3'),T=THREE;
+    var rd=new T.WebGLRenderer({canvas:cv,antialias:true,alpha:true});rd.setPixelRatio(Math.min(devicePixelRatio,2));
+    var sc=new T.Scene(),cam=new T.PerspectiveCamera(38,1,.1,100);cam.position.set(6.4,4,8.4);cam.lookAt(0,1.9,0);
+    sc.add(new T.HemisphereLight(0xffffff,0x66402a,.95));var dl=new T.DirectionalLight(0xffffff,.9);dl.position.set(5,9,6);sc.add(dl);
+    var built=buildRover(T),root=built.root;sc.add(root);root.rotation.y=.7;P3.parts=built.parts;
+    function size(){var w=box.clientWidth,h=box.clientHeight;rd.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix()}
+    size();addEventListener('resize',size);
+    var drag=false,lx=0,moved=0;
+    cv.addEventListener('pointerdown',function(e){drag=true;lx=e.clientX;moved=0;cv.setPointerCapture(e.pointerId);cv.style.cursor='grabbing'});
+    cv.addEventListener('pointermove',function(e){if(!drag)return;var dx=e.clientX-lx;lx=e.clientX;moved+=Math.abs(dx);root.rotation.y+=dx*.012});
+    cv.addEventListener('pointerup',function(e){drag=false;cv.style.cursor='grab';
+      if(moved<6){var r=cv.getBoundingClientRect(),rc=new T.Raycaster();
+        rc.setFromCamera(new T.Vector2((e.clientX-r.left)/r.width*2-1,-((e.clientY-r.top)/r.height)*2+1),cam);
+        var h=rc.intersectObjects(root.children,true).filter(function(i){return i.object.userData.part})[0];
+        if(h)selPart(h.object.userData.part)}});
+    (function loop(){if($('parts').classList.contains('on')){if(!drag)root.rotation.y+=.004;rd.render(sc,cam)}requestAnimationFrame(loop)})();
+    P3.ready=true;if(P3.sel)selPart(P3.sel);
+  }catch(e){P3.failed=true;$('r3').innerHTML='<p style="padding:30px;text-align:center">The 3D view needs a browser with WebGL. You can still tap the names below to learn about each part!</p>'}
+}
+
+/* Level 2 stops */
+var opened=0;
+document.querySelectorAll('.sh').forEach(function(h){h.onclick=function(){var s=h.parentNode;
+  if(!s.classList.contains('open')){opened++;s.classList.add('open');h.setAttribute('aria-expanded','true');
+    $('l2hint').textContent=opened===3?'You got through every hard time. Keep going!':'Open all 3 stops to unlock the next page ('+opened+'/3)';
+    if(opened===3)$('l2next').disabled=false}}});
+$('legacyBtn').onclick=function(){$('legacy').classList.remove('hide');this.classList.add('hide');burst(innerWidth/2,innerHeight*.5,['#FFC857','#FF8FB8','#8B7BFF'],['spark','star'],34)};
+
+/* Water time machine */
+function setWater(a){$('wsc').classList.toggle('ago',a);$('tago').classList.toggle('sel',a);$('tdry').classList.toggle('sel',!a);
+  $('wcap').textContent=a?'Long ago: scientists think shallow, salty water may have covered places like Meridiani Planum, where Opportunity landed.':'Mars today: cold, dry and dusty.';
+  if(a)burst(innerWidth/2,innerHeight*.4,['#8EC5FF','#fff','#7B5CFF'],['dot','spark'],26)}
+$('tdry').onclick=function(){setWater(false)};$('tago').onclick=function(){setWater(true)};
+
+/* Custom reaction icons (same style as the cards) */
+var RI={
+ wow:{c:['#FFC857','#FF9A3D','#FFF6C8'],h:['star','spark'],m:'Thank you! Opportunity would be so proud of you.',l:'Amazing',s:'<defs><linearGradient id="ra" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFE27A"/><stop offset="1" stop-color="#FF9A3D"/></linearGradient></defs><polygon points="50,6 62,36 94,38 69,59 78,91 50,73 22,91 31,59 6,38 38,36" fill="url(#ra)" stroke="#fff" stroke-width="3" stroke-linejoin="round"/><circle cx="40" cy="48" r="4" fill="#14123A"/><circle cx="60" cy="48" r="4" fill="#14123A"/><path d="M40 60q10 9 20 0" stroke="#14123A" stroke-width="3.5" fill="none" stroke-linecap="round"/>'},
+ love:{c:['#FF8FB8','#FF4D8D','#FFD1E3'],h:['heart','heart','spark'],m:'Her story touches many hearts, even yours.',l:'Touched',s:'<defs><linearGradient id="rb" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFB3D1"/><stop offset="1" stop-color="#FF3D7F"/></linearGradient></defs><path d="M50 88C14 62 8 38 22 24c12-11 26-5 28 8 2-13 16-19 28-8 14 14 8 38-28 64z" fill="url(#rb)" stroke="#fff" stroke-width="3" stroke-linejoin="round"/><path d="M28 34q4-8 12-6" stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round" opacity=".8"/>'},
+ power:{c:['#8B7BFF','#FF8FB8','#FFE27A'],h:['spark','star'],m:'She proved that hard roads can be crossed.',l:'Strong',s:'<defs><linearGradient id="rc" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#B7A8FF"/><stop offset="1" stop-color="#FF5FA2"/></linearGradient></defs><polygon points="58,4 20,56 44,56 36,96 80,40 55,40" fill="url(#rc)" stroke="#fff" stroke-width="3" stroke-linejoin="round"/>'},
+ dream:{c:['#FFC857','#FFFFFF','#8B7BFF'],h:['star','spark','dot'],m:'Maybe you will explore space one day!',l:'Inspired',s:'<defs><linearGradient id="rd" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#C9CCFF"/></linearGradient></defs><path d="M44 74Q50 100 56 74Z" fill="#FFC857"/><path d="M50 6C72 22 74 54 66 72H34C26 54 28 22 50 6Z" fill="url(#rd)" stroke="#fff" stroke-width="3" stroke-linejoin="round"/><circle cx="50" cy="38" r="9" fill="#FF7A45" stroke="#14123A" stroke-width="3"/><path d="M34 60L18 80l18-4zM66 60l16 20-18-4z" fill="#FF7A45"/>'}};
+Object.keys(RI).forEach(function(k){var e=RI[k],b=document.createElement('button');b.className='emo';
+  b.innerHTML='<svg viewBox="0 0 100 100" aria-hidden="true">'+e.s+'</svg>'+e.l;
+  b.onclick=function(){document.querySelectorAll('.emo').forEach(function(x){x.classList.remove('sel')});b.classList.add('sel');$('emoMsg').textContent=e.m;
+    var r=b.getBoundingClientRect();burst(r.left+r.width/2,r.top+r.height/2,e.c,e.h,34)};
+  $('emos').appendChild(b)});
+
+/* Quiz */
+var Q=[
+ {q:'Who gave the rover its name?',o:['A nine-year-old girl named Sofi Collis','The president','Another robot'],a:0,e:'Sofi won a NASA naming contest with her essay.'},
+ {q:'How long did NASA expect Opportunity to work?',o:['About 3 months','About 5 years','About 14 years'],a:0,e:'NASA planned for about 3 months (90 Mars days). She worked for 14 years!'},
+ {q:'What did the "blueberries" tell scientists?',o:['Mars once had liquid water','Mars is full of volcanoes','Someone dropped candy'],a:0,e:'The hematite balls grew in rock soaked with water, a strong clue that Mars was once wet.'}];
+var qi=0,score=0;
+function showQ(){var c=Q[qi],box=$('qo');$('qn').textContent='Question '+(qi+1)+' of '+Q.length;$('qt').textContent=c.q;$('qf').textContent='';$('qnext').classList.add('hide');box.innerHTML='';box.className='';
+  c.o.forEach(function(t,i){var b=document.createElement('button');b.className='opt';b.textContent=t;
+    b.onclick=function(){if(box.className)return;box.className='locked';var ok=i===c.a;if(ok){score++;var r=b.getBoundingClientRect();burst(r.left+60,r.top+r.height/2,['#7CF0B8','#FFC857','#fff'],['spark','dot'],18)}
+      b.classList.add(ok?'good':'bad');box.children[c.a].classList.add('good');$('qf').textContent=(ok?'Correct! ':'Not quite. ')+c.e;
+      var n=$('qnext');n.textContent=qi===Q.length-1?'Choose my favorite part':'Next';n.classList.remove('hide')};box.appendChild(b)})}
+$('qnext').onclick=function(){qi++;if(qi<Q.length)showQ();else go('pick')};
+document.querySelector('[data-go="quiz"]').addEventListener('click',function(){qi=0;score=0;showQ()});
+showQ();
+
+/* Explorer cards */
+var ROVDEFS=$('gold').outerHTML+$('pan').outerHTML+$('rover').outerHTML;
+function RU(x,y,w){return '<use href="#rover" xlink:href="#rover" x="'+x+'" y="'+y+'" width="'+w+'" height="'+(w*.625)+'"/>'}
+var SCENE={
+ up:'<defs><linearGradient id="su" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3B2A8F"/><stop offset="1" stop-color="#FF9A5B"/></linearGradient></defs><rect width="200" height="110" fill="url(#su)"/><circle cx="165" cy="26" r="10" fill="#FFE7A8"/><path d="M0 110V88L50 68L100 48L140 30L200 60V110Z" fill="#8E3A1A"/><path d="M140 30L200 60V110H150Z" fill="#6E2C14"/><g transform="rotate(-20 82 54)">'+RU(46,28,72)+'</g><path d="M140 30V8" stroke="#fff" stroke-width="2"/><path d="M140 8L160 14L140 20Z" fill="#FFC857"/>',
+ run:'<defs><linearGradient id="sr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1B1245"/><stop offset="1" stop-color="#FF8A5C"/></linearGradient></defs><rect width="200" height="110" fill="url(#sr)"/><circle cx="100" cy="64" r="15" fill="#FFE7A8"/><path d="M0 74L40 56L80 70L130 52L200 72V110H0Z" fill="#7A2B4F"/><path d="M0 110H200V80Q100 70 0 86Z" fill="#C1440E"/><path d="M-10 108C50 88 60 100 100 84S160 80 112 72" stroke="#FFF6E5" stroke-width="2.5" stroke-dasharray="1 6" stroke-linecap="round" fill="none"/>'+RU(20,62,58),
+ water:'<defs><linearGradient id="sw" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#C77A55"/><stop offset="1" stop-color="#F3C08C"/></linearGradient></defs><rect width="200" height="110" fill="url(#sw)"/><rect y="78" width="200" height="32" fill="#B65A32"/><path d="M60 102Q50 62 90 54Q140 46 150 92Q150 106 120 106Z" fill="#8C5A3C"/><g fill="#6B7A99" stroke="#FFF1DC" stroke-width="1.2"><circle cx="80" cy="76" r="5"/><circle cx="100" cy="66" r="4.5"/><circle cx="122" cy="80" r="5"/><circle cx="94" cy="90" r="4.5"/><circle cx="132" cy="64" r="4"/></g><path d="M165 12C155 28 150 36 150 44a15 15 0 0 0 30 0C180 36 175 28 165 12Z" fill="#6EC8F5" stroke="#fff" stroke-width="2"/><path d="M158 42a8 8 0 0 0 5 8" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/>'+RU(2,66,48),
+ star:'<defs><linearGradient id="ss" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0A0830"/><stop offset="1" stop-color="#4B2A86"/></linearGradient></defs><rect width="200" height="110" fill="url(#ss)"/><g fill="#fff"><circle cx="20" cy="16" r="1.4"/><circle cx="60" cy="30" r="1.1"/><circle cx="100" cy="12" r="1.6"/><circle cx="40" cy="60" r="1.2"/><circle cx="180" cy="20" r="1.4"/><circle cx="110" cy="70" r="1.1"/></g><circle cx="140" cy="46" r="38" fill="#FF7A45" opacity=".22"/><circle cx="140" cy="46" r="26" fill="#D9573A"/><circle cx="132" cy="40" r="4" fill="#B8432A"/><circle cx="148" cy="54" r="5" fill="#B8432A"/><path d="M60 8L98 30" stroke="#fff" stroke-width="2" stroke-linecap="round"/><path d="M0 110V90Q50 80 100 94T200 100V110Z" fill="#0B0A20"/><circle cx="34" cy="76" r="6" fill="#F5C9A0"/><path d="M28 75q6-12 12 0q-3-4-6-4q-3 0-6 4z" fill="#2B1810"/><path d="M28 82q6-3 12 0l3 16H25z" fill="#FF8FB8"/><path d="M40 84L66 62" stroke="#F5C9A0" stroke-width="4" stroke-linecap="round"/>',
+ gear:'<defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2A1F6B"/><stop offset="1" stop-color="#7B4A9A"/></linearGradient></defs><rect width="200" height="110" fill="url(#sg)"/><path d="M0 96Q100 84 200 94V110H0Z" fill="#C1440E"/>'+RU(30,20,140)+'<g fill="none" stroke="#FFC857" stroke-width="2" stroke-dasharray="3 3"><circle cx="130" cy="29" r="9"/><circle cx="67" cy="32" r="9"/><circle cx="164" cy="85" r="9"/><circle cx="100" cy="94" r="9"/></g>'};
+var ICON={
+ up:'<path d="M10 82 L40 34 L56 58 L68 44 L92 82Z" fill="#FFF6E5"/><path d="M40 34V12" stroke="#FFF6E5" stroke-width="5" stroke-linecap="round"/><path d="M40 12L64 20L40 28Z" fill="#FFC857"/>',
+ run:'<circle cx="60" cy="52" r="26" fill="none" stroke="#FFF6E5" stroke-width="9"/><circle cx="60" cy="52" r="7" fill="#FFF6E5"/><path d="M60 26V78M34 52H86M42 34L78 70M78 34L42 70" stroke="#FFF6E5" stroke-width="4"/><path d="M6 38h20M0 54h18M8 70h20" stroke="#FFC857" stroke-width="5" stroke-linecap="round"/>',
+ water:'<circle cx="42" cy="42" r="26" fill="none" stroke="#FFF6E5" stroke-width="9"/><path d="M62 62L88 88" stroke="#FFF6E5" stroke-width="11" stroke-linecap="round"/><path d="M42 26C34 38 30 44 30 50a12 12 0 0 0 24 0C54 44 50 38 42 26Z" fill="#FFF6E5"/>',
+ star:'<polygon points="50,4 62,36 96,38 70,60 79,92 50,74 21,92 30,60 4,38 38,36" fill="#FFF6E5"/><path d="M82 8l3 8 8 3-8 3-3 8-3-8-8-3 8-3z" fill="#FFC857"/>',
+ gear:(function(){var s='<circle cx="50" cy="50" r="22" fill="none" stroke="#FFF6E5" stroke-width="12"/><circle cx="50" cy="50" r="6" fill="#FFF6E5"/>';for(var i=0;i<8;i++)s+='<rect x="44" y="4" width="12" height="18" rx="3" fill="#FFF6E5" transform="rotate('+i*45+' 50 50)"/>';return s})()};
+var BADGES=[
+ {k:'up',q:'Her never-give-up spirit',t:'NEVER GIVE UP',c1:'#FF9A5B',c2:'#FF4D8D',st:[['Grit',99],['Hope',95],['Energy',90]],a:'You love that Opportunity kept going for 14 years, even when things got really hard. Dust devils cleaned her panels and her team kept inventing fixes. You are a Never-Give-Up Star: when the road gets tough, you keep trying!'},
+ {k:'run',q:'Her long journey',t:'MARATHON ROVER',c1:'#5EEAD4',c2:'#1FA36B',st:[['Stamina',99],['Focus',92],['Speed',72]],a:'You love that she drove about 45 km, around 110 laps of a school track, all the way to Endeavour Crater. You are a Marathon Rover: long roads do not scare you, you just take one step at a time!'},
+ {k:'water',q:'The water clues',t:'WATER DETECTIVE',c1:'#8EC5FF',c2:'#7B5CFF',st:[['Curiosity',99],['Clue sense',97],['Patience',90]],a:'You love the mystery of Mars water: the blueberries, ripples in rock and salty minerals. You are a Water Detective: you notice small clues and put them together to find big answers!'},
+ {k:'star',q:'A kid named her',t:'BIG DREAMER',c1:'#FFE27A',c2:'#FF9A3D',st:[['Imagination',99],['Courage',94],['Heart',96]],a:'You love that a nine-year-old girl looked at the stars and named a rover with her essay. You are a Big Dreamer: great ideas can start at any age, and yours might travel to space one day!'},
+ {k:'gear',q:'Her cameras, arm and wheels',t:'GADGET GENIUS',c1:'#D2B8FF',c2:'#8B5CF6',st:[['Brain',99],['Skill',95],['Teamwork',92]],a:'You love how her cameras, arm and wheels work together like a team. You are a Gadget Genius: you want to know how things work and maybe build the next rover!'}];
+function csvg(b,anim){var id='c'+b.k,sp=function(x,y,s,d){return '<path'+(anim?' class="tw" style="animation-delay:'+d+'s"':'')+' transform="translate('+x+' '+y+') scale('+s+')" d="M0-10Q0 0 10 0Q0 0 0 10Q0 0-10 0Q0 0 0-10Z" fill="#FFF6C8"/>'};
+  var fs=Math.min(27,Math.floor(250/(b.t.length*.62))),stars='';
+  for(var i=0;i<3;i++)stars+='<polygon transform="translate('+(236+i*16)+' 28) scale(.15)" points="50,4 62,36 96,38 70,60 79,92 50,74 21,92 30,60 4,38 38,36" fill="#FFC857"/>';
+  var rows='';b.st.forEach(function(s,j){var y=336+j*24;rows+='<text x="26" y="'+(y+4)+'" font-family="Fredoka,Trebuchet MS,sans-serif" font-size="12" font-weight="600" fill="#D8D2FF">'+s[0]+'</text><rect x="112" y="'+(y-4)+'" width="130" height="9" rx="4.5" fill="rgba(255,255,255,.16)"/><rect x="112" y="'+(y-4)+'" width="'+(s[1]*1.3)+'" height="9" rx="4.5" fill="url(#'+id+'f)"/><text x="274" y="'+(y+4)+'" text-anchor="end" font-family="Fredoka,Trebuchet MS,sans-serif" font-size="12" font-weight="700" fill="#fff">'+s[1]+'</text>'});
+  return '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 300 420" width="300" height="420" role="img" aria-label="'+b.t+' explorer card"><defs>'+ROVDEFS+'<linearGradient id="'+id+'f" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="'+b.c1+'"/><stop offset=".5" stop-color="#FFF6C8"/><stop offset="1" stop-color="'+b.c2+'"/></linearGradient><linearGradient id="'+id+'b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2A1E6B"/><stop offset="1" stop-color="#120F38"/></linearGradient><linearGradient id="'+id+'m" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="'+b.c1+'"/><stop offset="1" stop-color="'+b.c2+'"/></linearGradient><clipPath id="'+id+'c"><rect x="22" y="48" width="256" height="170" rx="16"/></clipPath></defs>'
+  +'<rect width="300" height="420" rx="26" fill="url(#'+id+'f)"/><rect x="6" y="6" width="288" height="408" rx="21" fill="url(#'+id+'b)"/>'
+  +'<text x="24" y="33" font-family="Fredoka,Trebuchet MS,sans-serif" font-size="12" font-weight="700" letter-spacing="3" fill="#FFC857">EXPLORER CARD</text>'+stars
+  +'<g clip-path="url(#'+id+'c)"><svg x="22" y="48" width="256" height="170" viewBox="0 0 200 110" preserveAspectRatio="xMidYMid slice">'+SCENE[b.k]+'</svg></g><rect x="22" y="48" width="256" height="170" rx="16" fill="none" stroke="#FFF6E5" stroke-width="3"/>'
+  +'<circle cx="150" cy="222" r="36" fill="url(#'+id+'m)" stroke="#FFF6E5" stroke-width="4"/><circle cx="150" cy="222" r="29" fill="none" stroke="rgba(255,255,255,.65)" stroke-width="1.5" stroke-dasharray="2 5"/><g transform="translate(122 194) scale(.56)">'+ICON[b.k]+'</g>'
+  +'<text x="150" y="290" text-anchor="middle" font-family="Fredoka,Trebuchet MS,sans-serif" font-size="'+fs+'" font-weight="700" fill="#FFF6E5">'+b.t+'</text><text x="150" y="311" text-anchor="middle" font-family="Fredoka,Trebuchet MS,sans-serif" font-size="12" font-weight="600" letter-spacing="3" fill="'+b.c1+'">OPPORTUNITY FAN</text>'
+  +rows+'<text x="150" y="408" text-anchor="middle" font-family="Fredoka,Trebuchet MS,sans-serif" font-size="10" fill="rgba(255,255,255,.55)">NASA Mars Exploration Rover · 2004-2018</text>'
+  +sp(14,14,1,0)+sp(286,236,1.2,.6)+sp(18,250,.9,1.1)+sp(280,100,1,.3)+'</svg>'}
+var cur=null;
+BADGES.forEach(function(b){var o=document.createElement('button');o.className='tile';
+  o.innerHTML='<div class="art"><svg viewBox="0 0 200 110" role="img" aria-label="Picture: '+b.q+'">'+SCENE[b.k]+'</svg></div><span>'+b.q+'</span>';
+  o.onclick=function(){cur=b;prepCard(b);go('badge')};$('picks').appendChild(o)});
+function prepCard(b){
+  $('bhead').textContent='Something is waiting for you...';$('bhead').classList.remove('hide');
+  $('seal').classList.remove('hide','shake');$('cardBox').classList.add('hide');$('bq').classList.add('hide');$('ba').classList.add('hide');$('bbtns').classList.add('hide');$('shareMsg').textContent='';
+  $('cardArt').innerHTML=csvg(b,true);$('tilt').style.setProperty('--glow',b.c1);
+  $('bq').textContent='You love: '+b.q;$('ba').textContent=b.a}
+$('seal').onclick=function(){
+  var s=this;s.classList.add('shake');
+  setTimeout(function(){
+    $('flash').classList.remove('go');void $('flash').offsetWidth;$('flash').classList.add('go');
+    s.classList.add('hide');$('bhead').textContent='You unlocked a '+cur.t+' card!';
+    $('cardBox').classList.remove('hide');$('bq').classList.remove('hide');$('ba').classList.remove('hide');$('bbtns').classList.remove('hide');
+    var cols=[cur.c1,cur.c2,'#FFF6C8','#FFC857'],w=innerWidth,h=innerHeight;
+    burst(w/2,h*.4,cols,['star','spark','heart','dot'],90);
+    [350,700,1050].forEach(function(t,i){setTimeout(function(){burst(w*(.2+Math.random()*.6),h*(.2+Math.random()*.3),cols,['spark','star'],40)},t)});
+  },900)};
+var tl=$('tilt');
+tl.addEventListener('pointermove',function(e){var r=tl.getBoundingClientRect(),x=(e.clientX-r.left)/r.width,y=(e.clientY-r.top)/r.height;
+  tl.classList.add('moving');tl.style.transform='rotateY('+((x-.5)*26)+'deg) rotateX('+((.5-y)*22)+'deg)';tl.style.setProperty('--hx',(x*100)+'%');tl.style.setProperty('--hy',(y*100)+'%')});
+tl.addEventListener('pointerleave',function(){tl.classList.remove('moving');tl.style.transform=''});
+$('again').onclick=function(){opened=0;qi=0;score=0;hist=[];
+  document.querySelectorAll('.stop').forEach(function(s){s.classList.remove('open');s.querySelector('.sh').setAttribute('aria-expanded','false')});
+  $('l2next').disabled=true;$('l2hint').textContent='Open all 3 stops to unlock the next page (0/3)';$('legacy').classList.add('hide');$('legacyBtn').classList.remove('hide');
+  document.querySelectorAll('.emo').forEach(function(x){x.classList.remove('sel')});$('emoMsg').innerHTML='&nbsp;';showQ();setWater(false);curS='start';go('start')};
+
+/* Share: turn the card into a picture */
+$('share').onclick=function(){
+  if(!cur)return;var msg=$('shareMsg');
+  var img=new Image();img.onload=function(){
+    var cv=document.createElement('canvas');cv.width=1080;cv.height=1500;var x=cv.getContext('2d');
+    var g=x.createLinearGradient(0,0,0,1500);g.addColorStop(0,'#0B1026');g.addColorStop(.65,'#2A1450');g.addColorStop(1,'#B83A1A');x.fillStyle=g;x.fillRect(0,0,1080,1500);
+    var rg=x.createRadialGradient(540,720,50,540,720,620);rg.addColorStop(0,cur.c1+'AA');rg.addColorStop(1,'transparent');x.fillStyle=rg;x.fillRect(0,0,1080,1500);
+    x.fillStyle='#fff';for(var i=0;i<90;i++){x.globalAlpha=Math.random();x.fillRect(Math.random()*1080,Math.random()*1000,3,3)}x.globalAlpha=1;
+    x.shadowColor='rgba(0,0,0,.55)';x.shadowBlur=60;x.shadowOffsetY=24;x.drawImage(img,150,250,780,1092);x.shadowColor='transparent';
+    x.textAlign='center';x.fillStyle='#FFC857';x.font='700 56px Fredoka, Trebuchet MS, sans-serif';x.fillText('I unlocked a rare card!',540,150);
+    x.fillStyle='#FFF6E5';x.font='500 36px Fredoka, Trebuchet MS, sans-serif';x.fillText('Opportunity: Abandoned but not Forgotten',540,1430);
+    cv.toBlob(function(bl){var f=new File([bl],'opportunity-card.png',{type:'image/png'});
+      if(navigator.canShare&&navigator.canShare({files:[f]})){navigator.share({files:[f],title:'My Opportunity explorer card',text:'I unlocked the '+cur.t+' card!'}).catch(function(){})}
+      else{var a=document.createElement('a');a.href=URL.createObjectURL(bl);a.download='opportunity-card.png';a.click();msg.textContent='Your card picture was saved. Share it with your friends!'}})};
+  img.onerror=function(){msg.textContent='Sorry, the picture could not be made. Try taking a screenshot instead!'};
+  img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(csvg(cur,false));
+};
+</script>
+</body>
+</html>
