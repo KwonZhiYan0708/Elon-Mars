@@ -3,7 +3,7 @@
   const btn = document.getElementById("go");
   const status = document.getElementById("status");
   const wait = ms => new Promise(r => setTimeout(r, ms));
-  const NEXT_PAGE = "story.html";   // change this to the page that comes after
+  const NEXT_PAGE = "gx.html";   // change this to the page that comes after
 
   let videoFailed = false;
   video.querySelector("source").addEventListener("error", () => (videoFailed = true));
